@@ -3,9 +3,9 @@ from jugador import Jugador
 from random import seed, randint
 seed()
 
-# Crear tablero
-# dimensión del tablero dado por una matriz cuadrada nxn
-n = 10
-t = Tablero(n)
-t.imprimir_tablero()
-print()
+if __name__ == "__main__":
+    # Crear tablero
+    dimension = 10   # tablero dado por una matriz cuadrada nxn
+    t = Tablero(dimension)
+    t.imprimir_tablero()
+    print()
