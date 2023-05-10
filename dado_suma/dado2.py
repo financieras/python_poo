@@ -21,7 +21,6 @@ class Dado:
     
     def lanzar(self):
         return randint(1, self.caras)
-    
 
 
 
@@ -35,8 +34,6 @@ class Jugador:
 
     def agregar_puntos(self, puntos):
         self.puntos += puntos
-
-
 
 
 class Juego:
@@ -57,15 +54,13 @@ class Juego:
         return jugadores_con_max_puntos
 
 
-
-
 if __name__ == "__main__":
     '''Se crean varios jugadores y luego se crea un juego con ellos.
     Finalmente el juego se juega y se determina el o los ganadores.
     Verificamos si hay más de un jugador en la lista jugadores_con_max_puntos 
     para determinar si hay un empate o un ganador único.'''
     
-    jugadores = [Jugador("Luis"), Jugador("Sara"), Jugador("Carlos")]
+    jugadores = [Jugador("A"), Jugador("B"), Jugador("C")]
 
     juego = Juego(jugadores)
 
