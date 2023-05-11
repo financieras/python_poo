@@ -95,20 +95,30 @@ class Jugador:
                     tablero.matriz[self.x][self.y] = self.letra
 
     def comer(self, tablero):
-        if tablero.matriz[self.x][self.y].isdigit():
+        print(f"Entra en comer con x={self.x} y con y={self.y} y en esa posición encuentra: {tablero.matriz[self.x][self.y]}")
+        if tablero.matriz[self.x][self.y].isnumeric():
+            print("Ha comido!!!")
             valor = int(tablero.matriz[self.x][self.y])
             self.puntos += valor
             tablero.matriz[self.x][self.y] = '·'
+            print("Comida antes de remover:", tablero.comida)
             tablero.comida.remove((self.x, self.y, valor))
-
+            print("Comida despues de remover:", tablero.comida)
 
 def jugar(tablero):
+    contador = 0
     while tablero.comida:
+        contador += 1
         todos_atrapados = True
         for jugador in tablero.jugadores:
+            posible_direccion = 1
+            while posible_direccion < 4:
+
+
+                
+
             direccion = random.choice(['arriba', 'abajo', 'izquierda', 'derecha'])
             jugador.mover(direccion, tablero)
-            jugador.comer(tablero)
             if not tablero.comida:
                 break
             if jugador.x > 0 and tablero.matriz[jugador.x - 1][jugador.y] == '·':
@@ -121,6 +131,9 @@ def jugar(tablero):
                 todos_atrapados = False
         tablero.imprimir_tablero()
         print()
+        print(tablero.comida)
+        print()
+        if contador >= 30: break
         if todos_atrapados:
             break
     max_puntos = max(jugador.puntos for jugador in tablero.jugadores)
@@ -135,6 +148,6 @@ def jugar(tablero):
 
 
 if __name__ == '__main__':
-    tablero = Tablero(3,2,2)
+    tablero = Tablero(4,2,2)
     tablero.imprimir_tablero()
     jugar(tablero)
