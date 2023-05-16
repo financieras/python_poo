@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" Sin usar POO programamos 
-un tablero, unos jugadores y una comida """
+""" Sin usar POO programamos un tablero, unos jugadores y una comida.
+Los jugadores se mueven por el tablero y van atrapando la comida
+que da puntos. Gana el que más puntos tenga cuando se acaba la comida"""
 
 from random import seed, randint
 seed()
@@ -59,18 +60,37 @@ def posibilidades(jugador):
     que indican si se puede mover el jugador o no en esa dirección.
     Las direcciones son en este orden: UP, DOWN, LEFT, RIGHT"""
     x, y = localiza(jugador)
+    # Inicializamos el array con las 4 direcciones en True
     arr_posibilidades = [True] * 4  # [Up, Down, Left, Right] las 4 direcciones en ese orden
+    # Los 'False' pueden ser por dos motivos:
+    # Motivo 1. nos salimos del tablero
     if y == 0: arr_posibilidades[0] = False   # UP
     if y == DIM-1: arr_posibilidades[1] = False   # DOWN
     if x == 0: arr_posibilidades[2] = False   # LEFT
     if x == DIM-1: arr_posibilidades[3] = False   # RIGHT
+    # Motivo 2. la celda de destino ya está ocupada por otro jugador
     if y > 0 and matriz[x][y-1] in LETRAS: arr_posibilidades[0] = False   # UP
     if y < DIM-1 and matriz[x][y+1] in LETRAS: arr_posibilidades[1] = False   # DOWN
     if x > 0 and matriz[x-1][y] in LETRAS: arr_posibilidades[2] = False   # LEFT
     if x < DIM-1 and matriz[x+1][y] in LETRAS: arr_posibilidades[3] = False   # RIGHT
     return arr_posibilidades
 
+def mover(jugador, arr_posibilidades):
+    """Mueve el jugador considerando las posiciones a las que está permitido
+     moverse dadas por el vector arr_posibilidades"""
+    x, y = localiza(jugador)
+    # LANZAMOS UNA FUNCIÓN QUE ASIGNA EL MÉTODO ELEGIDO PARA MOVERNOS:
+    #  PARA EL JUGADOR A, SERÁ EL SIGUIENTE, Y PARA OTROS JUGADORES DEJAR LA POSIBILIDAD DE QUE LUEGO
+    #  SE HAGAN OTROS MÉTODOS (CADA UNO EL SUYO) PARA IR OPTIMIZANDO ESTRATEGIAS DE MOVIMIENTO.
+
+    # MÉTODO A: LLAMAR A UNA FUNCIÓN QUE ELIGE SI MOVERSE HACIA UN LADO O HACIA OTRO DENTRO DE LOS True QUE DA EL VECTOR arr_posibilidades
+    # SI HAY VARIOS True QUE CONDUCEN A UN VALOR NUMÉRICO (CON COMIDA) SE IRÁ AL MAYOR
+    # SI SOLO HAY UN VALOR NUMÉRICO SE IRÁ A ESE
+    # SI NO HAY NINGÚN VALOR NUMÉRICO SE ELIGE ALEATORIAMENTE ALGUNO DE LOS True
+
 def jugando():
+    """Lógica principal del juego. Bucle while que repite tiradas hasta
+    que el juego finaliza al comerse la última comida del tablero"""
     turno = 1
     while contar_comida() > 0:
         print("\tTurno", turno, "\n")
@@ -79,8 +99,10 @@ def jugando():
             jugador = (i+primer_jugador) % NUM_JUGADORES    # como index
             print("Mueve", LETRAS[jugador])
             arr_posibilidades= posibilidades(jugador)
-            if not any(arr_posibilidades):
-                print(f"El jugador {LETRAS[jugador]} está bloquedao y pasa turno")
+            if not any(arr_posibilidades):  # si el array es [False, False, False, False]
+                print(f"El jugador {LETRAS[jugador]} está bloquedao y pasa al siguiente")
+                continue
+            mover(jugador, arr_posibilidades)
 
         turno += 1
         if turno == 5: break
