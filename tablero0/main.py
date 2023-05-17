@@ -15,7 +15,7 @@ def imprime_matriz():
 
 def generar_jugadores(num_jugadores):
     """Genera aleatoriamente los jugadores automaticamete asignándoles 
-    una letra como nombre y una posición aleatoria"""
+    una letra como nombre y una posición aleatoria única"""
     for i in range(num_jugadores):
         letra = LETRAS[i]
         x, y = randint(0,len(matriz)-1), randint(0, len(matriz)-1)
@@ -24,13 +24,13 @@ def generar_jugadores(num_jugadores):
         matriz[x][y] = letra
 
 def generar_comida(num_comida):
-    """Generamos aleatoriamente posiciones de comida en el tablero
-    con un valor aleatorio"""
+    """Generamos aleatoriamente posiciones únicas de comida en el tablero
+    con un valor aleatorio que indica la cantidad de comida en esa celda."""
     for _ in range(num_comida):
         x, y = randint(0, len(matriz)-1), randint(0, len(matriz)-1)
         while matriz[x][y] != '·':
             x, y = randint(0,len(matriz)-1), randint(0, len(matriz)-1)
-        matriz[x][y] = str(randint(1, 9))    # el valor de la comida es aleatorio, como str
+        matriz[x][y] = str(randint(1, 9))    # la cantidad de comida es aleatoria, como str
 
 def contar_comida():
     """Cuenta el número de celdas con comida que existen en la matriz"""
@@ -42,18 +42,18 @@ def contar_comida():
     return contador
 
 def quien_comienza():
-    """Devuelve la primera letra de la matriz"""
+    """Devuelve el primer jugador que comienza el juego, como index"""
     primer_jugador = randint(0, NUM_JUGADORES-1)
     primera_letra = LETRAS[primer_jugador]
-    print("Comienza jugando", primera_letra)
+    print("Comienza jugando", primera_letra)    # imprime la letra del premer jugador
     return primer_jugador   # como index
 
 def localiza(jugador):
-    """Devuelve la posición de la letra en la matriz"""
-    for fila in range(len(matriz)):
-        for columna in range(len(matriz[0])):
-            if matriz[fila][columna] == LETRAS[jugador]:
-                return fila, columna
+    """Devuelve la posición de la letra del jugador en el tablero"""
+    for y in range(len(matriz)):                # y da la posición vertical (son las filas)
+        for x in range(len(matriz[0])):         # x da la posición horizontal (son las columnas)
+            if matriz[y][x] == LETRAS[jugador]:
+                return x, y
             
 def posibilidades(jugador):
     """Devuelve un vector con cuatro posiciones True o False
@@ -75,18 +75,29 @@ def posibilidades(jugador):
     if x < DIM-1 and matriz[x+1][y] in LETRAS: arr_posibilidades[3] = False   # RIGHT
     return arr_posibilidades
 
-def mover(jugador, arr_posibilidades):
-    """Mueve el jugador considerando las posiciones a las que está permitido
-     moverse dadas por el vector arr_posibilidades"""
+def elegir_mover(jugador, arr_posibilidades):
+    """Elige la dirección a mover del jugador considerando las posiciones
+     a las que está permitido moverse dadas por el vector arr_posibilidades
+    Elegimos a que posición contígua movernos dentro de los True que da el vector arr_posibilidades
+    Si hay varias celdas con comida dadas por un valor numérico nos movemos al mayor
+    Si solo hay un valor numérico elegimos la dirección hacia esa celda con comida
+    Si no hay ningún valor numérico elegimos aleatoriamente alguno de los True"""
     x, y = localiza(jugador)
-    # LANZAMOS UNA FUNCIÓN QUE ASIGNA EL MÉTODO ELEGIDO PARA MOVERNOS:
-    #  PARA EL JUGADOR A, SERÁ EL SIGUIENTE, Y PARA OTROS JUGADORES DEJAR LA POSIBILIDAD DE QUE LUEGO
-    #  SE HAGAN OTROS MÉTODOS (CADA UNO EL SUYO) PARA IR OPTIMIZANDO ESTRATEGIAS DE MOVIMIENTO.
+    print(f"{LETRAS[jugador]} está en (x,y)=({x},{y}) y su arr_posibilidades es {arr_posibilidades}")
+    mi_max = 0  # si la celda contigua es numérica es que hay comida y buscamos su máximo
+    if arr_posibilidades[0] and matriz[x][y-1].isnumeric(): mi_max = max(mi_max, eval(matriz[x][y-1])); return 0  # UP
+    if arr_posibilidades[1] and matriz[x][y+1].isnumeric(): mi_max = max(mi_max, eval(matriz[x][y+1])); return 1  # DOWN
+    if arr_posibilidades[2] and matriz[x-1][y].isnumeric(): mi_max = max(mi_max, eval(matriz[x-1][y])); return 2  # LEFT
+    if arr_posibilidades[3] and matriz[x+1][y].isnumeric(): mi_max = max(mi_max, eval(matriz[x+1][y])); return 3  # RIGHT
+    if mi_max == 0: # Si no hay comida contígua entonces “elegir un True aleatorio”
+        direccion_index = randint(0, 3)
+        while arr_posibilidades[direccion_index] != True:
+            direccion_index = randint(0, DIM-1)
+        return direccion_index
 
-    # MÉTODO A: LLAMAR A UNA FUNCIÓN QUE ELIGE SI MOVERSE HACIA UN LADO O HACIA OTRO DENTRO DE LOS True QUE DA EL VECTOR arr_posibilidades
-    # SI HAY VARIOS True QUE CONDUCEN A UN VALOR NUMÉRICO (CON COMIDA) SE IRÁ AL MAYOR
-    # SI SOLO HAY UN VALOR NUMÉRICO SE IRÁ A ESE
-    # SI NO HAY NINGÚN VALOR NUMÉRICO SE ELIGE ALEATORIAMENTE ALGUNO DE LOS True
+def mover(jugador, direccion_index):
+    print(f"{LETRAS[jugador]} se mueve hacia {direccion_index}")
+
 
 def jugando():
     """Lógica principal del juego. Bucle while que repite tiradas hasta
@@ -102,26 +113,28 @@ def jugando():
             if not any(arr_posibilidades):  # si el array es [False, False, False, False]
                 print(f"El jugador {LETRAS[jugador]} está bloquedao y pasa al siguiente")
                 continue
-            mover(jugador, arr_posibilidades)
+            direccion_index = elegir_mover(jugador, arr_posibilidades) # elegimos en que dirección movernos
+            mover(jugador, direccion_index) # ahora nos movemos según la direccion_index: 0:Up 1:Down 2:Left 3:Rigth
 
         turno += 1
-        if turno == 5: break
+        if turno == 2: break
 
 def anuncia_ganadores():
     """Anuncia el jugador o jugadores ganadores cuando finaliza el juego. 
     El juego finaliza cuando ya no queda comida en el tablero.
-    Proporciona todos los puntajes, la clasificación por orden."""
+    Proporciona el ranking de los juegadores con su puntuación."""
     pass
 
 if __name__ == "__main__":
-    DIM = 3             # dimensión de un tablero cuadrado nxn
+    DIM = 5             # dimensión de un tablero cuadrado nxn
     LETRAS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     NUM_JUGADORES = 4   # elegir entre 2 y 26
-    NUM_COMIDA = 4      # número de celdas con comida
+    NUM_COMIDA = 1      # número de celdas con comida
     matriz = [['·']*DIM for _ in range(DIM)]    # tablero inicial
     generar_jugadores(NUM_JUGADORES)
     generar_comida(NUM_COMIDA)
     imprime_matriz()
+    print(matriz)
     print()
     #print("Celdas con comida:", contar_comida())
     primer_jugador = quien_comienza()   # como index
