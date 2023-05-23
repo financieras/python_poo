@@ -23,7 +23,7 @@ class Comida:
 class Tablero:
     def __init__(self, DIM, num_jugadores, num_comida):
         self.DIM = DIM
-        self.tablero = [['·' for _ in range(DIM)] for _ in range(DIM)]
+        self.tablero = [['·']*DIM for _ in range(DIM)]
         self.jugadores = []
         self.comidas = []
         for i in range(num_jugadores):
@@ -47,6 +47,9 @@ class Tablero:
     def __str__(self):
         res = ''
         for fila in self.tablero:
+            for cont, caracter in enumerate(fila):
+                if caracter in [chr(i) for i in range(65, 91)]:
+                    fila[cont] = f"\033[93m\033[1m{caracter}\033[0m"   # color yellow + bold
             res += ' '.join(fila) + '\n'
         return res
 
@@ -96,14 +99,14 @@ class Juego:
                 self.tablero.mover_jugador(jugador)
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print(self.tablero)
-                time.sleep(0.01)
+                time.sleep(0.1)
         ganador = max(self.tablero.jugadores, key=lambda j: j.puntaje)
         print(f"¡El ganador es el jugador {ganador.letra} con {ganador.puntaje} puntos!\n")
         self.imprimir_ranking()
 
 if "__main__" == __name__:
-    DIM = 10
-    num_jugadores = 6
-    num_comida = 20
+    DIM = 5
+    num_jugadores = 2
+    num_comida = 4
     partida = Juego(DIM, num_jugadores, num_comida)
     partida.jugar()
