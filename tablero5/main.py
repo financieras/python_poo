@@ -1,5 +1,8 @@
-import random, os, time
+import random
+import os
+import time
 from string import ascii_uppercase
+
 
 class Jugador:
     def __init__(self, letra, x, y):
@@ -8,11 +11,13 @@ class Jugador:
         self.y = y
         self.puntaje = 0
 
+
 class Comida:
     def __init__(self, x, y, valor):
         self.x = x
         self.y = y
         self.valor = valor
+
 
 class Tablero:
     def __init__(self, DIM, num_jugadores, num_comida):
@@ -27,7 +32,8 @@ class Tablero:
                 jugador_x = random.randint(0, DIM-1)
                 jugador_y = random.randint(0, DIM-1)
             self.tablero[jugador_x][jugador_y] = ascii_uppercase[i]
-            self.jugadores.append(Jugador(ascii_uppercase[i], jugador_x, jugador_y))
+            self.jugadores.append(
+                Jugador(ascii_uppercase[i], jugador_x, jugador_y))
         for i in range(num_comida):   # comida
             comida_x = random.randint(0, DIM-1)
             comida_y = random.randint(0, DIM-1)
@@ -56,12 +62,14 @@ class Tablero:
         if self.tablero[nueva_x][nueva_y].isdigit():
             valor_comida = int(self.tablero[nueva_x][nueva_y])
             jugador.puntaje += valor_comida
-            self.comidas = [comida for comida in self.comidas if not (comida.x == nueva_x and comida.y == nueva_y)]
+            self.comidas = [comida for comida in self.comidas if not (
+                comida.x == nueva_x and comida.y == nueva_y)]
 
         self.tablero[jugador.x][jugador.y] = '·'
         jugador.x = nueva_x
         jugador.y = nueva_y
         self.tablero[jugador.x][jugador.y] = jugador.letra
+
 
 class Juego:
     def __init__(self, DIM, num_jugadores, num_comida):
@@ -76,11 +84,14 @@ class Juego:
                 print(self.tablero)
                 time.sleep(0.1)
         ganador = max(self.tablero.jugadores, key=lambda j: j.puntaje)
-        print(f"¡El ganador es el jugador {ganador.letra} con {ganador.puntaje} puntos!")
+        print(
+            f"¡El ganador es el jugador {ganador.letra} con {ganador.puntaje} puntos!")
+
 
 if "__main__" == __name__:
     DIM = 6
     num_jugadores = 9
     num_comida = 20
-    partida = Juego(DIM, num_jugadores, num_comida)   # Juego(DIM, num_jugadores)
+    # Juego(DIM, num_jugadores)
+    partida = Juego(DIM, num_jugadores, num_comida)
     partida.jugar()
