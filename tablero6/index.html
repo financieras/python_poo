@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tablero</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+      td {
+        width: 50px;
+        height: 50px;
+        border: 1px solid black;
+        text-align: center;
+        font-size: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <table id="tablero"></table>
+    <script>
+      var socket = io.connect('http://' + document.domain + ':' + location.port);
+      socket.on('tablero', function(data) {
+        var table = document.getElementById('tablero');
+        for (var i = 0; i < data.length; i++) {
+          var row = table.insertRow(i);
+          for (var j = 0; j < data[i].length; j++) {
+            var cell = row.insertCell(j);
+            cell.innerHTML = data[i][j];
+          }
+        }
+      });
+      socket.on('actualizar_tablero', function(data) {
+        var table = document.getElementById('tablero');
+        for (var i = 0; i < data.length; i++) {
+          for (var j = 0; j < data[i].length; j++) {
+            table.rows[i].cells[j].innerHTML = data[i][j];
+          }
+        }
+      });
+      setInterval(function() {
+        socket.emit('mover_letra');
+      }, 1000);
+    </script>
+  </body>
+</html>
+
+<!--
+    Este código crea una tabla HTML para mostrar el tablero y utiliza jQuery y Socket.IO para manejar los eventos de WebSockets. Cuando se recibe un evento 'tablero', se crea la tabla y se llena con los datos del tablero. Cuando se recibe un evento 'actualizar_tablero', se actualiza la tabla con los nuevos datos del tablero. También hay un temporizador que envía un evento 'mover_letra' cada segundo para actualizar el tablero.
+-->
