@@ -1,7 +1,6 @@
 import random
 import os
 import time
-from string import ascii_uppercase
 
 
 class Jugador:
@@ -28,17 +27,16 @@ class Tablero:
     def __init__(self, DIM, num_jugadores, num_comida):
         self.DIM = DIM
         self.tablero = [['·']*DIM for _ in range(DIM)]
-        self.jugadores = []
-        self.comidas = []
+        self.jugadores = []     # array de objetos de la clase Jugador
+        self.comidas = []       # array de objetos de la clase Comida
         for i in range(num_jugadores):
             jugador_x = random.randint(0, DIM-1)
             jugador_y = random.randint(0, DIM-1)
             while self.tablero[jugador_x][jugador_y] != '·':
                 jugador_x = random.randint(0, DIM-1)
                 jugador_y = random.randint(0, DIM-1)
-            self.tablero[jugador_x][jugador_y] = ascii_uppercase[i]
-            self.jugadores.append(
-                Jugador(ascii_uppercase[i], jugador_x, jugador_y))
+            self.tablero[jugador_x][jugador_y] = chr(65 + i)
+            self.jugadores.append(Jugador(chr(65 + i), jugador_x, jugador_y))
         for i in range(num_comida):   # comida
             comida_x = random.randint(0, DIM-1)
             comida_y = random.randint(0, DIM-1)
@@ -59,15 +57,15 @@ class Tablero:
         return res
 
     def mover_jugador(self, jugador):
-        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: arriba, abajo, derecha, izquierda
         libertades = [True] * 4   # Inicialmente suponemos que el jugador tiene todas las libertades de movimiento
-        for count, movimiento in  enumerate(movimientos):
+        for count, movimiento in enumerate(movimientos):
             dx, dy = movimiento
             nueva_x = jugador.x + dx
             nueva_y = jugador.y + dy
             if not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
-                libertades[count] = False   # jugador ahogado, no puede moverse al estar rodeado de paredes u otros jugadores
-        if any(libertades):  # es False cuando el jugador está ahogado en todas las direcciones, y ahi pasa turno
+                libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
+        if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
             dx, dy = random.choice(movimientos)
             nueva_x = jugador.x + dx
             nueva_y = jugador.y + dy
@@ -105,6 +103,7 @@ class Juego:
                 self.tablero.mover_jugador(jugador)
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print(self.tablero)
+                print()
                 time.sleep(0.1)
         ganador = max(self.tablero.jugadores, key=lambda j: j.puntaje)
         print(f"¡El ganador es el jugador {ganador.letra} con {ganador.puntaje} puntos!\n")
@@ -112,7 +111,7 @@ class Juego:
 
 if "__main__" == __name__:
     DIM = 5
-    num_jugadores = 2
-    num_comida = 4
+    num_jugadores = 3
+    num_comida = 2
     partida = Juego(DIM, num_jugadores, num_comida)
     partida.jugar()
