@@ -2,6 +2,15 @@ import random
 import os
 import time
 
+# Constants
+RED = "\033[1;91m"        # Red Bold High Intensty
+GREEN = "\033[1;92m"      # Green Bold High Intensty
+YELLOW = "\033[1;93m"     # Yellow Bold High Intensty
+BLUE = "\033[1;94m"       # Blue Bold High Intensty
+PURPLE = "\033[1;95m"     # Purple Bold High Intensty
+CYAN = "\033[1;96m"       # Cyan Bold High Intensty
+RESET = "\033[0m"
+
 
 class Jugador:
     def __init__(self, letra, x, y):
@@ -48,12 +57,16 @@ class Tablero:
             self.comidas.append(Comida(comida_x, comida_y, valor_comida))
 
     def __str__(self):
+        tablero_color = [row[:] for row in self.tablero]    # Deep Copy de la matriz
+        print(self.tablero)
+        num_letras = len([element for row in self.tablero for element in row if element.isupper()])
         res = ''
-        for fila in self.tablero:
+        for fila in tablero_color:
             for cont, caracter in enumerate(fila):
                 if caracter in [chr(i) for i in range(65, 91)]:
-                    fila[cont] = f"\033[93m\033[1m{caracter}\033[0m"   # color yellow + bold
+                    fila[cont] = f'{RED}{caracter}{RESET}'   # cambia el caracter letra mayúscula por ella misma con color
             res += ' '.join(fila) + '\n'
+            res += num_letras
         return res
 
     def mover_jugador(self, jugador):
@@ -110,8 +123,8 @@ class Juego:
         self.imprimir_ranking()
 
 if "__main__" == __name__:
-    DIM = 5
-    num_jugadores = 3
-    num_comida = 2
+    DIM = 10
+    num_jugadores = 26
+    num_comida = 74
     partida = Juego(DIM, num_jugadores, num_comida)
     partida.jugar()
