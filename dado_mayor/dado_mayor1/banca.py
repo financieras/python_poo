@@ -4,8 +4,8 @@ class Banca:
         self.jugador_b = jugador_b
     
     def jugar(self):
-        numero_a = self.jugador_a.jugar()
-        numero_b = self.jugador_b.jugar()
+        numero_a = self.jugador_a.lanzar_dado()
+        numero_b = self.jugador_b.lanzar_dado()
 
         if numero_a > numero_b:
             return f"El ganador es {self.jugador_a.nombre} con {numero_a} puntos, {self.jugador_b.nombre} sacó solo {numero_b} {'punto' if numero_b==1 else 'puntos'}."

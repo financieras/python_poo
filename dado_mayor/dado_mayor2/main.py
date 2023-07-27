@@ -6,5 +6,5 @@ jugador_a = JugadorA()
 jugador_b = JugadorB()
 banca = Banca(jugador_a, jugador_b)
 
-ganador = banca.jugar()
-print("El ganador es:", ganador)
+resultado = banca.jugar()
+print("Resultado del juego: ", resultado)
