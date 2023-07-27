@@ -4,10 +4,8 @@ class Jugador:
     def __init__(self, nombre):
         self.nombre = nombre
     
-    def jugar(self):
+    def lanzar_dado(self):
         return random.randint(1, 6)
-
-
 
 
 class Banca:
@@ -19,7 +17,7 @@ class Banca:
         ganador = None
         
         for jugador in self.jugadores:
-            numero = jugador.jugar()
+            numero = jugador.lanzar_dado()
             print(jugador.nombre, "ha sacado un", numero)
             
             if numero > maximo:
@@ -29,7 +27,7 @@ class Banca:
         return ganador
 
 jugadores = [Jugador("Jugador 1"), Jugador("Jugador 2"), Jugador("Jugador 3"), Jugador("Jugador 4"), Jugador("Jugador 5")]
-banca = Banca(jugadores)
+banca = Banca(jugadores)    # el argumento jugadores es un array de objetos
 
 ganador = banca.jugar()
-print("El ganador es:", ganador)
+print("El ganador es:", ganador)    # solo da un ganador aunque exista empate
