@@ -10,4 +10,4 @@ jugadores = [JugadorA(num_final), JugadorB(num_final), JugadorC(num_final), Juga
 banca = Banca(jugadores)
 
 ganador = banca.jugar()
-print("El gador es:", ganador)
+print("El ganador es:", ganador)
