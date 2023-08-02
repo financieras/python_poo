@@ -1,4 +1,4 @@
-import random
+from random import randint, choice
 import os
 import time
 
@@ -42,7 +42,7 @@ class Jugador:
                         mejores_movimientos.append((dx, dy))
 
         if mejores_movimientos:
-            dx, dy = random.choice(mejores_movimientos)
+            dx, dy = choice(mejores_movimientos)
             nueva_x = self.x + dx
             nueva_y = self.y + dy
 
@@ -61,26 +61,25 @@ class Comida:
 
 
 class Tablero:
-    def __init__(self, DIM, num_jugadores, num_comida):
+    def __init__(self, DIM, NUM_PLAYERS, AMOUNT_FOOD):
         self.DIM = DIM
         self.tablero = [['·']*DIM for _ in range(DIM)]
         self.jugadores = []     # array de objetos de la clase Jugador
         self.comidas = []       # array de objetos de la clase Comida
-        for i in range(num_jugadores):
-            jugador_x = random.randint(0, DIM-1)
-            jugador_y = random.randint(0, DIM-1)
-            while self.tablero[jugador_x][jugador_y] != '·':
-                jugador_x = random.randint(0, DIM-1)
-                jugador_y = random.randint(0, DIM-1)
+        for i in range(NUM_PLAYERS):
+            while True:
+                jugador_x, jugador_y = randint(0, DIM-1), randint(0, DIM-1)
+                if self.tablero[jugador_x][jugador_y] == '·':
+                    break
             self.tablero[jugador_x][jugador_y] = chr(65 + i)
             self.jugadores.append(Jugador(chr(65 + i), jugador_x, jugador_y))
-        for i in range(num_comida):   # comida
-            comida_x = random.randint(0, DIM-1)
-            comida_y = random.randint(0, DIM-1)
+        for i in range(AMOUNT_FOOD):   # comida
+            comida_x = randint(0, DIM-1)
+            comida_y = randint(0, DIM-1)
             while self.tablero[comida_x][comida_y] != '·':
-                comida_x = random.randint(0, DIM-1)
-                comida_y = random.randint(0, DIM-1)
-            valor_comida = random.randint(1, 9)
+                comida_x = randint(0, DIM-1)
+                comida_y = randint(0, DIM-1)
+            valor_comida = randint(1, 9)
             self.tablero[comida_x][comida_y] = str(valor_comida)
             self.comidas.append(Comida(comida_x, comida_y, valor_comida))
 
@@ -112,11 +111,11 @@ class Tablero:
                 if not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
                     libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
             if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
-                dx, dy = random.choice(movimientos)
+                dx, dy = choice(movimientos)
                 nueva_x = jugador.x + dx
                 nueva_y = jugador.y + dy
                 while not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
-                    dx, dy = random.choice(movimientos)
+                    dx, dy = choice(movimientos)
                     nueva_x = jugador.x + dx
                     nueva_y = jugador.y + dy
                 if self.tablero[nueva_x][nueva_y].isdigit():
@@ -131,8 +130,8 @@ class Tablero:
 
 
 class Juego:
-    def __init__(self, DIM, num_jugadores, num_comida):
-        self.tablero = Tablero(DIM, num_jugadores, num_comida)
+    def __init__(self, DIM, NUM_PLAYERS, AMOUNT_FOOD):
+        self.tablero = Tablero(DIM, NUM_PLAYERS, AMOUNT_FOOD)
 
     def imprimir_ranking(self):
         jugadores_ordenados = sorted(self.tablero.jugadores, key=lambda jugador: jugador.puntaje, reverse=True)
@@ -157,8 +156,8 @@ class Juego:
 
 
 if "__main__" == __name__:
-    DIM = 10
-    NUM_PLAYERS = 26
-    AMOUNT_FOOD = 74
+    DIM = 3
+    NUM_PLAYERS = 2
+    AMOUNT_FOOD = DIM**2-NUM_PLAYERS
     partida = Juego(DIM, NUM_PLAYERS, AMOUNT_FOOD)
     partida.jugar()
