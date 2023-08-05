@@ -23,7 +23,7 @@ class Jugador:
         return f'{self.letra} → {self.puntaje}'
     
     def mover_hacia_comida(self, tablero):
-        movimientos = [(0,1), (0,-1), (1,0), (-1,0)]
+        movimientos = [(0,1), (0,-1), (1,0), (-1,0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
         mejores_movimientos = []
         max_valor_comida = 0
 
@@ -36,9 +36,9 @@ class Jugador:
                     valor_comida = int(tablero.tablero[nueva_x][nueva_y])
                     if valor_comida > max_valor_comida:
                         max_valor_comida = valor_comida = valor_comida
-                        mejores_movimientos = [(dx, dy)]
-                    elif valor_comida_== max_valor_comida:
-                        mejores_movimientos.append((dx, dy))
+                        mejores_movimientos = [(dx, dy)] # si hay nuevo máximo sustituye al anterior
+                    elif valor_comida == max_valor_comida:
+                        mejores_movimientos.append((dx, dy)) # si hay empate en el máximo
 
         if mejores_movimientos:
             dx, dy = choice(mejores_movimientos)
@@ -57,4 +57,77 @@ class Comida:
 
 
 class Tablero:
-    
+    def __init__(self, DIM, NUM_PLAYERS, AMOUTN_FOOD):
+        self.DIM = DIM
+        self.tablero = [['·']*DIM for _ in range(DIM)]
+        self.jugadores = [] # array de objetos de la clase Jugador
+        self.comidas = []   # array de objetos de la clase Comida
+        for i in range(NUM_PLAYERS):    # ubicar jugadores
+            while True:
+                (jugador_x, jugador_y) = (randint(0,DIM-1), randint(0, DIM-1))
+                if self.tablero[jugador_x][jugador_y] == '·':
+                    break   # ya hemos encontrado sitio libre para el jugador
+            self.tablero[jugador_x][jugador_y] = chr(65 + i)    # letras
+            self.jugadores.append(Jugador(chr(65+i),jugador_x, jugador_y)) # instanciación de objeto de la clase Jugador
+        for i in range(AMOUNT_FOOD):    # ubicar comida
+            while True:
+                (comida_x, comida_y) = (randint(0, DIM-1), randint(0, DIM-1))
+                if self.tablero[comida_x][comida_y] == '·':
+                    break     # ya hemos encontrado un sitio libre para la comida
+            valor_comida = randint(1, 9)
+            self.tablero[comida_x][comida_y] = str(valor_comida)    # los números del tablero van como strings
+            self.comidas.append(Comida(comida_x, comida_y, valor_comida))   # instanciamos un objeto de la clase Comida
+
+    def __str__(self):
+        tablero_color = [row[:] for row in self.tablero]    # Deep Copy
+        res = ''
+        for fila in tablero_color:
+            for cont, caracter in enumerate(fila):
+                if caracter in [chr(i) for i in range(66, 91)]: # todas las letras mayúsculas menos A
+                    fila[cont] = f'{GREEN}{caracter}{RESET}'    # cambia el caracter letra mayúscula por ella misma con color
+                elif caracter == 'A':                           # color específico para esta letra
+                    fila[cont] = f'{RED}{caracter}{RESET}'
+            res += ' '.join(fila) + '\n'
+        return res
+
+    def mover_jugador(self, jugador):
+        if jugador.letra == 'A':
+            jugador.mover_hacia_comida(self)
+        else:   # Resto de código para mover los otros jugadores de forma aleatoria
+            movimientos = [(0,1), (0,-1), (1,0), (-1,0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
+            libertades = [True] * 4 # Inicialmente suponemos que el jugador tiene todas las libertades de movimiento
+            for count, movimiento in enumerate(movimientos):
+                dx, dy = movimiento
+                (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
+                if not(0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
+                    libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
+            if any(libertades): # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if "__main__" == __name__:
+    DIM = 6
+    NUM_PLAYERS = 26 
+    AMOUNT_FOOD = DIM**2-NUM_PLAYERS
+    partida = Juego(DIM, NUM_PLAYERS, AMOUNT_FOOD)
+    partida.jugar()
+

@@ -23,7 +23,7 @@ class Jugador:
         return f'{self.letra} → {self.puntaje}'
     
     def mover_hacia_comida(self, tablero):
-        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: arriba, abajo, derecha, izquierda
+        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
         mejores_movimientos = []
         max_valor_comida = 0
 
@@ -66,40 +66,39 @@ class Tablero:
             while True:
                 (jugador_x, jugador_y) = (randint(0, DIM-1), randint(0, DIM-1))
                 if self.tablero[jugador_x][jugador_y] == '·':
-                    break   # ya hemos encontrado sitio para el jugador
-            self.tablero[jugador_x][jugador_y] = chr(65 + i)
+                    break   # ya hemos encontrado sitio libre para el jugador
+            self.tablero[jugador_x][jugador_y] = chr(65 + i)    # letras
             self.jugadores.append(Jugador(chr(65 + i), jugador_x, jugador_y))   # instanciación de un objeto de la clase Jugador
         for i in range(AMOUNT_FOOD):   # ubicar comida
             while True:
                 comida_x, comida_y = randint(0, DIM-1), randint(0, DIM-1)
                 if self.tablero[comida_x][comida_y] == '·':
-                    break   # ya hemos encontrado sitio para la comida
+                    break   # ya hemos encontrado un sitio libre para la comida
             valor_comida = randint(1, 9)
-            self.tablero[comida_x][comida_y] = str(valor_comida)
+            self.tablero[comida_x][comida_y] = str(valor_comida)    # los números del tablero van como strings
             self.comidas.append(Comida(comida_x, comida_y, valor_comida))   # instanciación de un objeto de la clase Comida
 
     def __str__(self):
-        tablero_color = [row[:] for row in self.tablero]    # Deep Copy de la matriz
+        tablero_color = [row[:] for row in self.tablero]    # Deep Copy
         res = ''
         for fila in tablero_color:
             for cont, caracter in enumerate(fila):
                 if caracter in [chr(i) for i in range(66, 91)]: # todas las letras mayúsculas menos A
                     fila[cont] = f'{GREEN}{caracter}{RESET}'    # cambia el caracter letra mayúscula por ella misma con color
-                elif caracter == 'A':
+                elif caracter == 'A':                           # color específico para esta letra
                     fila[cont] = f'{RED}{caracter}{RESET}'
             res += ' '.join(fila) + '\n'
         return res
 
     def mover_jugador(self, jugador):
-        if jugador.letra == 'A':
+        if jugador.letra == 'Z':
             jugador.mover_hacia_comida(self)
         else:   # Resto del código para mover los otros jugadores de forma aleatoria
-            movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: arriba, abajo, derecha, izquierda
+            movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
             libertades = [True] * 4   # Inicialmente suponemos que el jugador tiene todas las libertades de movimiento
             for count, movimiento in enumerate(movimientos):
                 dx, dy = movimiento
-                nueva_x = jugador.x + dx
-                nueva_y = jugador.y + dy
+                (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
                 if not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
                     libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
             if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
@@ -141,15 +140,15 @@ class Juego:
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print(self.tablero)
                 print()
-                time.sleep(1)
+                time.sleep(0.03)
         ganador = max(self.tablero.jugadores, key=lambda j: j.puntaje)
         print(f"¡El ganador es el jugador {ganador.letra} con {ganador.puntaje} puntos!\n")
         self.imprimir_ranking()
 
 
 if "__main__" == __name__:
-    DIM = 3
-    NUM_PLAYERS = 8
+    DIM = 40
+    NUM_PLAYERS = 25 
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
     partida = Juego(DIM, NUM_PLAYERS, AMOUNT_FOOD)
     partida.jugar()
