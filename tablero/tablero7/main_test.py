@@ -21,13 +21,37 @@ class Jugador:
 
     def __str__(self):
         return f'{self.letra} → {self.puntaje}'
+
+    def movimientos_factibles(self, tablero):
+        # aquí viene un análisis de los grados de libertad y
+        # se ha de mirar donde es posible llegar a situar al jugador
+        # evitando salir del tablero y evitando ocupar la celda de otro jugador
+        pass
+
+    def mover_aleatorio(self):
+        dx, dy = choice(MOVIMIENTOS)    # elección aleatoria del movimiento
+        return dx, dy
+
+    def mover_recordando_ultimo(self, tablero):
+        pass
     
+    def mover_recordando_todo(self, tablero):
+        pass
+
+    def mover_comida_inmediata(self, tablero):
+        movimientos_alcanzables = self.jugador.movimientos_factibles(tablero)
+        for movimiento in movimientos_alcanzables:
+            dx, dy = movimiento
+            (nueva_x, nueva_y) = (self.x + dx, self.y + dy)
+            if tablero[nueva_x][nueva_y].isdigit():
+                return dx, dy
+        return self.jugador.mover_aleatorio()
+
     def mover_hacia_comida(self, tablero):
-        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
         mejores_movimientos = []
         max_valor_comida = 0
 
-        for movimiento in movimientos:
+        for movimiento in MOVIMIENTOS:
             dx, dy = movimiento
             (nueva_x, nueva_y) = (self.x+dx, self.y+dy)
 
@@ -91,9 +115,8 @@ class Tablero:
         return res
 
     def mover_jugador(self, jugador):
-        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
         libertades = [True] * 4   # Inicialmente suponemos que el jugador tiene todas las libertades de movimiento
-        for count, movimiento in enumerate(movimientos):
+        for count, movimiento in enumerate(MOVIMIENTOS):
             dx, dy = movimiento
             (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
             if not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
@@ -101,9 +124,9 @@ class Tablero:
         if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
             while True:
                 if jugador.letra == 'B':
-                    pass
+                    dx, dy = jugador.mover_comida_inmediata(self.tablero)
                 else:
-                    dx, dy = choice(movimientos)    # elección aleatoria del movimiento
+                    dx, dy = jugador.mover_aleatorio()
                 (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
                 if (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) and not(self.tablero[nueva_x][nueva_y].isalpha()):
                     break   # ya hemos encontrado un sitio válido al que movernos
@@ -145,8 +168,9 @@ class Juego:
 
 
 if "__main__" == __name__:
-    DIM = 10
+    DIM = 6
     NUM_PLAYERS = 26 
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
+    MOVIMIENTOS = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
     partida = Juego(DIM, NUM_PLAYERS, AMOUNT_FOOD)
     partida.jugar()
