@@ -3,13 +3,13 @@ import os
 import time
 
 # Constants
-RED = "/033[1;91m"      # Red Bold High Intensity
-GREEN = "/033[1;92m"    # Green Bold High Intensity
-
-
-
-
-RESET = "/033[0m"
+RED = "\033[1;91m"        # Red Bold High Intensty
+GREEN = "\033[1;92m"      # Green Bold High Intensty
+YELLOW = "\033[1;93m"     # Yellow Bold High Intensty
+BLUE = "\033[1;94m"       # Blue Bold High Intensty
+PURPLE = "\033[1;95m"     # Purple Bold High Intensty
+CYAN = "\033[1;96m"       # Cyan Bold High Intensty
+RESET = "\033[0m"
 
 
 class Jugador:
@@ -23,7 +23,7 @@ class Jugador:
         return f'{self.letra} → {self.puntaje}'
     
     def mover_hacia_comida(self, tablero):
-        movimientos = [(0,1), (0,-1), (1,0), (-1,0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
+        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
         mejores_movimientos = []
         max_valor_comida = 0
 
@@ -31,11 +31,11 @@ class Jugador:
             dx, dy = movimiento
             (nueva_x, nueva_y) = (self.x+dx, self.y+dy)
 
-            if 0 <= nueva_x < tablero.DIM and 0 <= nueva.y < tablero.DIM:
+            if 0 <= nueva_x < tablero.DIM and 0 <= nueva_y < tablero.DIM:
                 if tablero.tablero[nueva_x][nueva_y].isdigit():
                     valor_comida = int(tablero.tablero[nueva_x][nueva_y])
                     if valor_comida > max_valor_comida:
-                        max_valor_comida = valor_comida = valor_comida
+                        max_valor_comida = valor_comida
                         mejores_movimientos = [(dx, dy)] # si hay nuevo máximo sustituye al anterior
                     elif valor_comida == max_valor_comida:
                         mejores_movimientos.append((dx, dy)) # si hay empate en el máximo
@@ -57,26 +57,26 @@ class Comida:
 
 
 class Tablero:
-    def __init__(self, DIM, NUM_PLAYERS, AMOUTN_FOOD):
+    def __init__(self, DIM, NUM_PLAYERS, AMOUNT_FOOD):
         self.DIM = DIM
         self.tablero = [['·']*DIM for _ in range(DIM)]
-        self.jugadores = [] # array de objetos de la clase Jugador
-        self.comidas = []   # array de objetos de la clase Comida
+        self.jugadores = []     # array de objetos de la clase Jugador
+        self.comidas = []       # array de objetos de la clase Comida
         for i in range(NUM_PLAYERS):    # ubicar jugadores
             while True:
-                (jugador_x, jugador_y) = (randint(0,DIM-1), randint(0, DIM-1))
+                (jugador_x, jugador_y) = (randint(0, DIM-1), randint(0, DIM-1))
                 if self.tablero[jugador_x][jugador_y] == '·':
                     break   # ya hemos encontrado sitio libre para el jugador
             self.tablero[jugador_x][jugador_y] = chr(65 + i)    # letras
-            self.jugadores.append(Jugador(chr(65+i),jugador_x, jugador_y)) # instanciación de objeto de la clase Jugador
-        for i in range(AMOUNT_FOOD):    # ubicar comida
+            self.jugadores.append(Jugador(chr(65 + i), jugador_x, jugador_y))   # instanciación de un objeto de la clase Jugador
+        for i in range(AMOUNT_FOOD):   # ubicar comida
             while True:
-                (comida_x, comida_y) = (randint(0, DIM-1), randint(0, DIM-1))
+                comida_x, comida_y = randint(0, DIM-1), randint(0, DIM-1)
                 if self.tablero[comida_x][comida_y] == '·':
-                    break     # ya hemos encontrado un sitio libre para la comida
+                    break   # ya hemos encontrado un sitio libre para la comida
             valor_comida = randint(1, 9)
             self.tablero[comida_x][comida_y] = str(valor_comida)    # los números del tablero van como strings
-            self.comidas.append(Comida(comida_x, comida_y, valor_comida))   # instanciamos un objeto de la clase Comida
+            self.comidas.append(Comida(comida_x, comida_y, valor_comida))   # instanciación de un objeto de la clase Comida
 
     def __str__(self):
         tablero_color = [row[:] for row in self.tablero]    # Deep Copy
@@ -91,43 +91,62 @@ class Tablero:
         return res
 
     def mover_jugador(self, jugador):
-        if jugador.letra == 'A':
-            jugador.mover_hacia_comida(self)
-        else:   # Resto de código para mover los otros jugadores de forma aleatoria
-            movimientos = [(0,1), (0,-1), (1,0), (-1,0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
-            libertades = [True] * 4 # Inicialmente suponemos que el jugador tiene todas las libertades de movimiento
-            for count, movimiento in enumerate(movimientos):
-                dx, dy = movimiento
+        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
+        libertades = [True] * 4   # Inicialmente suponemos que el jugador tiene todas las libertades de movimiento
+        for count, movimiento in enumerate(movimientos):
+            dx, dy = movimiento
+            (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
+            if not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
+                libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
+        if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
+            while True:
+                if jugador.letra == 'B':
+                    pass
+                else:
+                    dx, dy = choice(movimientos)    # elección aleatoria del movimiento
                 (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
-                if not(0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
-                    libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
-            if any(libertades): # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
+                if (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) and not(self.tablero[nueva_x][nueva_y].isalpha()):
+                    break   # ya hemos encontrado un sitio válido al que movernos
+            if self.tablero[nueva_x][nueva_y].isdigit():
+                valor_comida = int(self.tablero[nueva_x][nueva_y])
+                jugador.puntaje += valor_comida
+                self.comidas = [comida for comida in self.comidas if not (comida.x == nueva_x and comida.y == nueva_y)]
+
+            self.tablero[jugador.x][jugador.y] = '·'    # reponemos el punto en la celda abandonada
+            (jugador.x, jugador.y) = (nueva_x, nueva_y) # asignamos la nueva posición al jugador
+            self.tablero[jugador.x][jugador.y] = jugador.letra  # ponemos la letra en la nueva posición
 
 
+class Juego:
+    def __init__(self, DIM, NUM_PLAYERS, AMOUNT_FOOD):
+        self.tablero = Tablero(DIM, NUM_PLAYERS, AMOUNT_FOOD)   # instanciamos un objeto de la clase Tablero
 
+    def imprimir_ranking(self):
+        jugadores_ordenados = sorted(self.tablero.jugadores, key=lambda jugador: jugador.puntaje, reverse=True)
+        print("Ranking de jugadores:")
+        for jugador in jugadores_ordenados:
+            print(jugador)  # usa el str del jugador
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def jugar(self):
+        print(self.tablero)
+        while self.tablero.comidas:
+            for jugador in self.tablero.jugadores:
+                if not self.tablero.comidas:    # si ya no hay comida en el tablero
+                    break   # finaliza el juego sin terminar el turno de los otros jugadores
+                else:       # mientras haya comida en el tablero
+                    self.tablero.mover_jugador(jugador)     # invocamos el método mover_jugador
+                    os.system('cls' if os.name == 'nt' else 'clear')
+                    print(self.tablero)
+                    print()
+                    time.sleep(0.03)
+        ganador = max(self.tablero.jugadores, key=lambda j: j.puntaje)
+        print(f"¡El ganador es el jugador {ganador.letra} con {ganador.puntaje} puntos!\n")
+        self.imprimir_ranking()
 
 
 if "__main__" == __name__:
-    DIM = 6
+    DIM = 10
     NUM_PLAYERS = 26 
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
     partida = Juego(DIM, NUM_PLAYERS, AMOUNT_FOOD)
     partida.jugar()
-

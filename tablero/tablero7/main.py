@@ -102,27 +102,24 @@ class Tablero:
                 if not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
                     libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
             if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
-                dx, dy = choice(movimientos)
-                (nueva_x, nueva_y) = (jugador.x+dx, jugador.y+dy)
-                while not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
+                while True:
                     dx, dy = choice(movimientos)
-                    nueva_x = jugador.x + dx
-                    nueva_y = jugador.y + dy
+                    (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
+                    if (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) and not(self.tablero[nueva_x][nueva_y].isalpha()):
+                        break   # ya hemos encontrado un sitio válido al que movernos
                 if self.tablero[nueva_x][nueva_y].isdigit():
                     valor_comida = int(self.tablero[nueva_x][nueva_y])
                     jugador.puntaje += valor_comida
                     self.comidas = [comida for comida in self.comidas if not (comida.x == nueva_x and comida.y == nueva_y)]
-                    print()
 
-                self.tablero[jugador.x][jugador.y] = '·'
-                jugador.x = nueva_x
-                jugador.y = nueva_y
-                self.tablero[jugador.x][jugador.y] = jugador.letra
+                self.tablero[jugador.x][jugador.y] = '·'    # reponemos el punto en la celda abandonada
+                (jugador.x, jugador.y) = (nueva_x, nueva_y) # asignamos la nueva posición al jugador
+                self.tablero[jugador.x][jugador.y] = jugador.letra  # ponemos la letra en la nueva posición
 
 
 class Juego:
     def __init__(self, DIM, NUM_PLAYERS, AMOUNT_FOOD):
-        self.tablero = Tablero(DIM, NUM_PLAYERS, AMOUNT_FOOD)
+        self.tablero = Tablero(DIM, NUM_PLAYERS, AMOUNT_FOOD)   # instanciamos un objeto de la clase Tablero
 
     def imprimir_ranking(self):
         jugadores_ordenados = sorted(self.tablero.jugadores, key=lambda jugador: jugador.puntaje, reverse=True)
@@ -134,21 +131,22 @@ class Juego:
         print(self.tablero)
         while self.tablero.comidas:
             for jugador in self.tablero.jugadores:
-                if not self.tablero.comidas:
-                    break   # si ya no hay comida en el tablero finaliza el juego sin terminar el turno de los otros jugadores
-                self.tablero.mover_jugador(jugador)
-                os.system('cls' if os.name == 'nt' else 'clear')
-                print(self.tablero)
-                print()
-                time.sleep(0.03)
+                if not self.tablero.comidas:    # si ya no hay comida en el tablero
+                    break   # finaliza el juego sin terminar el turno de los otros jugadores
+                else:       # mientras haya comida en el tablero
+                    self.tablero.mover_jugador(jugador)     # invocamos el método mover_jugador
+                    os.system('cls' if os.name == 'nt' else 'clear')
+                    print(self.tablero)
+                    print()
+                    time.sleep(0.03)
         ganador = max(self.tablero.jugadores, key=lambda j: j.puntaje)
         print(f"¡El ganador es el jugador {ganador.letra} con {ganador.puntaje} puntos!\n")
         self.imprimir_ranking()
 
 
 if "__main__" == __name__:
-    DIM = 40
-    NUM_PLAYERS = 25 
+    DIM = 30
+    NUM_PLAYERS = 2 
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
     partida = Juego(DIM, NUM_PLAYERS, AMOUNT_FOOD)
     partida.jugar()
