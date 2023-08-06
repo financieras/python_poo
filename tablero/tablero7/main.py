@@ -21,17 +21,20 @@ class Jugador:
 
     def __str__(self):
         return f'{self.letra} → {self.puntaje}'
-    
-    def mover_hacia_comida(self, tablero):
-        movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
+
+    def mover_aleatorio(self):
+        dx, dy = choice(MOVIMIENTOS)    # elección aleatoria del movimiento
+        return dx, dy
+
+    def mover_hacia_comida_inmediata(self, tablero):
         mejores_movimientos = []
         max_valor_comida = 0
 
-        for movimiento in movimientos:
+        for movimiento in MOVIMIENTOS:
             dx, dy = movimiento
             (nueva_x, nueva_y) = (self.x+dx, self.y+dy)
 
-            if 0 <= nueva_x < tablero.DIM and 0 <= nueva_y < tablero.DIM:
+            if 0 <= nueva_x < DIM and 0 <= nueva_y < DIM:
                 if tablero.tablero[nueva_x][nueva_y].isdigit():
                     valor_comida = int(tablero.tablero[nueva_x][nueva_y])
                     if valor_comida > max_valor_comida:
@@ -57,8 +60,7 @@ class Comida:
 
 
 class Tablero:
-    def __init__(self, DIM, NUM_PLAYERS, AMOUNT_FOOD):
-        self.DIM = DIM
+    def __init__(self, NUM_PLAYERS, AMOUNT_FOOD):
         self.tablero = [['·']*DIM for _ in range(DIM)]
         self.jugadores = []     # array de objetos de la clase Jugador
         self.comidas = []       # array de objetos de la clase Comida
@@ -91,35 +93,31 @@ class Tablero:
         return res
 
     def mover_jugador(self, jugador):
-        if jugador.letra == 'Z':
-            jugador.mover_hacia_comida(self)
-        else:   # Resto del código para mover los otros jugadores de forma aleatoria
-            movimientos = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
-            libertades = [True] * 4   # Inicialmente suponemos que el jugador tiene todas las libertades de movimiento
-            for count, movimiento in enumerate(movimientos):
-                dx, dy = movimiento
+        libertades = [True] * 4   # Inicialmente suponemos que el jugador tiene todas las libertades de movimiento
+        for count, movimiento in enumerate(MOVIMIENTOS):
+            dx, dy = movimiento
+            (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
+            if not (0 <= nueva_x < DIM and 0 <= nueva_y < DIM) or self.tablero[nueva_x][nueva_y].isalpha():
+                libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
+        if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
+            while True:
+                dx, dy = jugador.mover_aleatorio()
                 (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
-                if not (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) or self.tablero[nueva_x][nueva_y].isalpha():
-                    libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
-            if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
-                while True:
-                    dx, dy = choice(movimientos)
-                    (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
-                    if (0 <= nueva_x < self.DIM and 0 <= nueva_y < self.DIM) and not(self.tablero[nueva_x][nueva_y].isalpha()):
-                        break   # ya hemos encontrado un sitio válido al que movernos
-                if self.tablero[nueva_x][nueva_y].isdigit():
-                    valor_comida = int(self.tablero[nueva_x][nueva_y])
-                    jugador.puntaje += valor_comida
-                    self.comidas = [comida for comida in self.comidas if not (comida.x == nueva_x and comida.y == nueva_y)]
+                if (0 <= nueva_x < DIM and 0 <= nueva_y < DIM) and not(self.tablero[nueva_x][nueva_y].isalpha()):
+                    break   # ya hemos encontrado un sitio válido al que movernos
+            if self.tablero[nueva_x][nueva_y].isdigit():
+                valor_comida = int(self.tablero[nueva_x][nueva_y])
+                jugador.puntaje += valor_comida
+                self.comidas = [comida for comida in self.comidas if not (comida.x == nueva_x and comida.y == nueva_y)]
 
-                self.tablero[jugador.x][jugador.y] = '·'    # reponemos el punto en la celda abandonada
-                (jugador.x, jugador.y) = (nueva_x, nueva_y) # asignamos la nueva posición al jugador
-                self.tablero[jugador.x][jugador.y] = jugador.letra  # ponemos la letra en la nueva posición
+            self.tablero[jugador.x][jugador.y] = '·'    # reponemos el punto en la celda abandonada
+            (jugador.x, jugador.y) = (nueva_x, nueva_y) # asignamos la nueva posición al jugador
+            self.tablero[jugador.x][jugador.y] = jugador.letra  # ponemos la letra en la nueva posición
 
 
 class Juego:
-    def __init__(self, DIM, NUM_PLAYERS, AMOUNT_FOOD):
-        self.tablero = Tablero(DIM, NUM_PLAYERS, AMOUNT_FOOD)   # instanciamos un objeto de la clase Tablero
+    def __init__(self, NUM_PLAYERS, AMOUNT_FOOD):
+        self.tablero = Tablero(NUM_PLAYERS, AMOUNT_FOOD)   # instanciamos un objeto de la clase Tablero
 
     def imprimir_ranking(self):
         jugadores_ordenados = sorted(self.tablero.jugadores, key=lambda jugador: jugador.puntaje, reverse=True)
@@ -145,8 +143,9 @@ class Juego:
 
 
 if "__main__" == __name__:
-    DIM = 30
-    NUM_PLAYERS = 2 
+    DIM = 10
+    NUM_PLAYERS = 26
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
-    partida = Juego(DIM, NUM_PLAYERS, AMOUNT_FOOD)
+    MOVIMIENTOS = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, Arriba, aBajo
+    partida = Juego(NUM_PLAYERS, AMOUNT_FOOD)
     partida.jugar()
