@@ -29,16 +29,22 @@ class Jugador:
                 return MOVIMIENTOS[dado]    # retorna la tupla con el movimiento elegido
     
     def mover_hacia_comida_inmediata(self, jugador, libertades, tablero):
-        for cont, libertad in enumerate(libertades):
+        comidas_cercanas = libertades[:]    # copiamos el array
+        maximo_comidas_cercanas = 0
+        dx_max = dy_max = 0
+        for count, libertad in enumerate(libertades):
             if libertad:    # si es libre en esa dirección
-                dx, dy = MOVIMIENTOS[cont]
+                dx, dy = MOVIMIENTOS[count]
                 (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
-                if tablero[nueva_x][nueva_y].isdigit():   # si encuentra comida
-                    print(f'Comida en ({nueva_x},{nueva_y}) por valor {tablero[nueva_x][nueva_y]}')
-                    return dx, dy   # se debe retornar la tupla (dx, dy)
-                else:   # en caso contrario es que no hay comida inmediata y se mueve aleatoriamente
-                    print("A mueve aleatoriamente")
-                    return jugador.mover_aleatorio(libertades)
+                contenido_celda = tablero[nueva_x][nueva_y]
+                if contenido_celda.isdigit() and int(contenido_celda) > maximo_comidas_cercanas:   # si encuentra comida y su valor numérico es > qu el maximo
+                    maximo_comidas_cercanas = int(contenido_celda)
+                    (dx_max, dy_max) = (dx, dy)
+        if dx_max==0 and dy_max==0: # en este caso no hay comida inmediata y se mueve aleatoriamente
+            return jugador.mover_aleatorio(libertades)
+        else:   # en este caso si hay comida inmediata y se retorna la dirección de máximo valor de la comida
+            return dx_max, dy_max   # se debe retornar la tupla (dx, dy)
+        
 
 class Comida:
     def __init__(self, x, y, valor):
@@ -90,16 +96,6 @@ class Tablero:
         if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
             if jugador.letra == 'A':                                                                                    # <----- Caso del jugador A
                 dx, dy = jugador.mover_hacia_comida_inmediata(jugador, libertades, self.tablero)
-                print(libertades)
-                if (dx,dy) == (1, 0):
-                    print("aBajo")
-                elif (dx,dy) == (-1, 0):
-                    print("Arriba")
-                elif (dx,dy) == (0, 1):
-                    print("Derecha")
-                elif (dx,dy) == (0, -1):
-                    print("Izquierda")
-                print(f"(dx, dy) = ({dx}, {dy})")
             else:   # para el resto de jugadores se mueve de forma aleatoria
                 dx, dy = jugador.mover_aleatorio(libertades)
             (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
@@ -133,18 +129,18 @@ class Juego:
                     break   # finaliza el juego sin terminar el turno de los otros jugadores
                 else:       # mientras haya comida en el tablero
                     self.tablero.mover_jugador(jugador)     # invocamos el método mover_jugador
-                    #os.system('cls' if os.name == 'nt' else 'clear')
+                    os.system('cls' if os.name == 'nt' else 'clear')
                     print(self.tablero)
                     print()
-                    time.sleep(0.06)
+                    time.sleep(0.01)
         ganador = max(self.tablero.jugadores, key=lambda j: j.puntaje)
         print(f"¡El ganador es el jugador {ganador.letra} con {ganador.puntaje} puntos!\n")
         self.imprimir_ranking()
 
 
 if "__main__" == __name__:
-    DIM = 4        # dimensión del tablero cuadrado. Debe ser suficiente para todos los jugadores y una comia
-    NUM_PLAYERS = 2 # tienen que estar entre min=2 y max=26
+    DIM = 42        # dimensión del tablero cuadrado. Debe ser suficiente para todos los jugadores y una comia
+    NUM_PLAYERS = 26 # tienen que estar entre min=2 y max=26
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
     MOVIMIENTOS = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, aBajo, Arriba
     partida = Juego(NUM_PLAYERS, AMOUNT_FOOD)
