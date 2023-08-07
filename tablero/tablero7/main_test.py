@@ -1,11 +1,11 @@
-from random import randint#, choice
+from random import randint
 import os
 import time
 
 # Constants
 RED = "\033[1;91m"        # Red Bold High Intensty
 GREEN = "\033[1;92m"      # Green Bold High Intensty
-YELLOW = "\033[1;93m"     # Yellow Bold High Intensty
+YELLOW = "\033[0;33m"     # Yellow                      #"\033[1;93m"     # Yellow Bold High Intensty
 BLUE = "\033[1;94m"       # Blue Bold High Intensty
 PURPLE = "\033[1;95m"     # Purple Bold High Intensty
 CYAN = "\033[1;96m"       # Cyan Bold High Intensty
@@ -29,7 +29,6 @@ class Jugador:
                 return MOVIMIENTOS[dado]    # retorna la tupla con el movimiento elegido
     
     def mover_hacia_comida_inmediata(self, jugador, libertades, tablero):
-        comidas_cercanas = libertades[:]    # copiamos el array
         maximo_comidas_cercanas = 0
         dx_max = dy_max = 0
         for count, libertad in enumerate(libertades):
@@ -44,7 +43,23 @@ class Jugador:
             return jugador.mover_aleatorio(libertades)
         else:   # en este caso si hay comida inmediata y se retorna la dirección de máximo valor de la comida
             return dx_max, dy_max   # se debe retornar la tupla (dx, dy)
-        
+    
+    def distancia(self, posicion_inicial, posicion_final):    # las posiciones son tuplas con la componentes (x,y)
+        return abs(posicion_final[0]-posicion_inicial[0]) + abs(posicion_final[1]-posicion_inicial[1])  # retorna un int
+
+    def mover_hacia_comida(self, jugador, libertades, tablero):
+        min_distancia = None        #DIM**2      # inicializamos la variable con un valor superior a la distancia máxima posible
+        posicion_cercana = None         # tupla con la posición a la comida más cercana
+        for i in range(DIM):
+            for j in range(DIM):
+                distance = distancia((jugador.x, jugador.y), (i, j))
+                if min_distancia == None or distance < min_distancia:
+                    posicion_cercana = (i, j)   # al finalizar los dos bucles tendremos en esta variable la posición a la comida más cercana
+                    min_distancia = distance    # y tendremos la distancia que separa al jugador de la comida más cercana
+
+        # AHORA TOCA PROGRAMAR AQUI CÓMO SEGUIR LA RUTA HASTA LA COMIDA MÁS CERCANA, o más bien dar el dx, dy del siguiente paso
+
+        return dx, dy        
 
 class Comida:
     def __init__(self, x, y, valor):
@@ -79,10 +94,12 @@ class Tablero:
         res = ''
         for fila in tablero_color:
             for cont, caracter in enumerate(fila):
-                if caracter in [chr(i) for i in range(66, 91)]: # todas las letras mayúsculas menos A
-                    fila[cont] = f'{GREEN}{caracter}{RESET}'    # cambia el caracter letra mayúscula por ella misma con color
-                elif caracter == 'A':                           # color específico para esta letra
+                if caracter == 'A':                                 # color específico para esta letra
                     fila[cont] = f'{RED}{caracter}{RESET}'
+                elif caracter == 'B':                               # color específico para esta letra
+                    fila[cont] = f'{GREEN}{caracter}{RESET}'
+                elif caracter in [chr(i) for i in range(67, 91)]:   # todas las letras mayúsculas menos A y B
+                    fila[cont] = f'{YELLOW}{caracter}{RESET}'       # cambia el caracter letra mayúscula por ella misma con color
             res += ' '.join(fila) + '\n'
         return res
 
@@ -96,6 +113,8 @@ class Tablero:
         if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
             if jugador.letra == 'A':                                                                                    # <----- Caso del jugador A
                 dx, dy = jugador.mover_hacia_comida_inmediata(jugador, libertades, self.tablero)
+            elif jugador.letra == 'B':                                                                                    # <----- Caso del jugador A
+                dx, dy = jugador.mover_hacia_comida(jugador, libertades, self.tablero)
             else:   # para el resto de jugadores se mueve de forma aleatoria
                 dx, dy = jugador.mover_aleatorio(libertades)
             (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
@@ -139,7 +158,7 @@ class Juego:
 
 
 if "__main__" == __name__:
-    DIM = 42        # dimensión del tablero cuadrado. Debe ser suficiente para todos los jugadores y una comia
+    DIM = 20        # dimensión del tablero cuadrado. Debe ser suficiente para todos los jugadores y una comia
     NUM_PLAYERS = 26 # tienen que estar entre min=2 y max=26
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
     MOVIMIENTOS = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, aBajo, Arriba
