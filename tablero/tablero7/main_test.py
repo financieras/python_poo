@@ -21,6 +21,12 @@ class Jugador:
 
     def __str__(self):
         return f'{self.letra} → {self.puntaje}'
+    
+    def posicion_factible(self, jugador, tablero, posicion_propuesta):  # si la posición propuesta es factible da True
+        nueva_x, nueva_y = posicion_propuesta
+        if (0 <= nueva_x < DIM and 0 <= nueva_y < DIM) and not(self.tablero[nueva_x][nueva_y].isalpha()):
+            return True
+        return False
 
     def mover_aleatorio(self, libertades):
         while True:
@@ -48,16 +54,21 @@ class Jugador:
         return abs(posicion_final[0]-posicion_inicial[0]) + abs(posicion_final[1]-posicion_inicial[1])  # retorna un int
 
     def mover_hacia_comida(self, jugador, libertades, tablero):
-        min_distancia = None        #DIM**2      # inicializamos la variable con un valor superior a la distancia máxima posible
-        posicion_cercana = None         # tupla con la posición a la comida más cercana
+        min_distancia = None        # inicializamos la variable
+        posicion_comida_cercana = None     # tupla con la posición a la comida más cercana
         for i in range(DIM):
             for j in range(DIM):
-                distance = distancia((jugador.x, jugador.y), (i, j))
+                distance = self.distancia((jugador.x, jugador.y), (i, j))
                 if min_distancia == None or distance < min_distancia:
-                    posicion_cercana = (i, j)   # al finalizar los dos bucles tendremos en esta variable la posición a la comida más cercana
+                    posicion_comida_cercana = (i, j)   # al finalizar los dos bucles tendremos en esta variable la posición a la comida más cercana
                     min_distancia = distance    # y tendremos la distancia que separa al jugador de la comida más cercana
 
         # AHORA TOCA PROGRAMAR AQUI CÓMO SEGUIR LA RUTA HASTA LA COMIDA MÁS CERCANA, o más bien dar el dx, dy del siguiente paso
+        #posicion_propuesta = posicion_comida_cercana # OJO esta asignación no se puede hacer pq la posicion_propuesta ha de estar en el vecindario y la posicion_comida_cercana puede estar muy lejos
+
+
+
+        if self.posicion_factible(jugador, tablero, posicion_propuesta):
 
         return dx, dy        
 
@@ -108,7 +119,7 @@ class Tablero:
         for count, movimiento in enumerate(MOVIMIENTOS):
             dx, dy = movimiento
             (nueva_x, nueva_y) = (jugador.x + dx, jugador.y + dy)
-            if not (0 <= nueva_x < DIM and 0 <= nueva_y < DIM) or self.tablero[nueva_x][nueva_y].isalpha():
+            if not(Jugador.posicion_factible(self, jugador, self.tablero, (nueva_x, nueva_y))):
                 libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
         if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
             if jugador.letra == 'A':                                                                                    # <----- Caso del jugador A
@@ -158,7 +169,7 @@ class Juego:
 
 
 if "__main__" == __name__:
-    DIM = 20        # dimensión del tablero cuadrado. Debe ser suficiente para todos los jugadores y una comia
+    DIM = 10        # dimensión del tablero cuadrado. Debe ser suficiente para todos los jugadores y una comia
     NUM_PLAYERS = 26 # tienen que estar entre min=2 y max=26
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
     MOVIMIENTOS = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, aBajo, Arriba
