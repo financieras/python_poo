@@ -125,9 +125,9 @@ class Board:
             if not(Jugador.posicion_factible(self, (nueva_x, nueva_y))):
                 libertades[count] = False   # jugador ahogado en esa dirección, no puede moverse al tener pared u otro jugador
         if any(libertades):  # da False cuando el jugador está ahogado en todas las direcciones, y entonces pasa turno
-            if jugador.letra == 'A':                                                                # <----- Caso del jugador A
+            if jugador.letra == 'A' or jugador.letra == 'B':                                                                # <----- Caso del jugador A
                 dx, dy = jugador.mover_hacia_comida(jugador, libertades, self.matrix)
-            elif jugador.letra == 'B':                                                              # <----- Caso del jugador B
+            elif jugador.letra == 'C' or jugador.letra == 'D':                                                              # <----- Caso del jugador B
                 dx, dy = jugador.mover_hacia_comida_inmediata(jugador, libertades, self.matrix)
             else:   # para el resto de jugadores se mueve de forma aleatoria
                 dx, dy = jugador.mover_aleatorio(libertades)
@@ -172,8 +172,8 @@ class Juego:
 
 
 if "__main__" == __name__:
-    DIM = 20        # dimensión del board cuadrado. Debe ser suficiente para todos los jugadores y una comia
-    NUM_PLAYERS = 3 # tienen que estar entre min=2 y max=26
+    DIM = 42        # dimensión del board cuadrado. Debe ser suficiente para todos los jugadores y una comia
+    NUM_PLAYERS = 6 # tienen que estar entre min=2 y max=26
     AMOUNT_FOOD = DIM**2-NUM_PLAYERS
     MOVIMIENTOS = [(0, 1), (0, -1), (1, 0), (-1, 0)]    # tuplas: Derecha, Izquierda, aBajo, Arriba
     partida = Juego(NUM_PLAYERS, AMOUNT_FOOD)
